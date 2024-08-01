@@ -19,7 +19,7 @@ jobs:
           python -m pip install build
           python -m build --wheel
           python -m pip install "matplotlib==3.9.1"
-          python -m pip install dist/*.whl
+          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
           python -m pip list
       - name: Run tests
         run: |
@@ -40,7 +40,7 @@ jobs:
           python -m pip install build
           python -m build --wheel
           python -m pip install "matplotlib==3.9.0"
-          python -m pip install dist/*.whl
+          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
           python -m pip list
       - name: Run tests
         run: |
@@ -61,7 +61,7 @@ jobs:
           python -m pip install build
           python -m build --wheel
           python -m pip install --no-binary=matplotlib "matplotlib==3.9.1"
-          python -m pip install dist/*.whl
+          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
           python -m pip list
       - name: Run tests
         run: |
