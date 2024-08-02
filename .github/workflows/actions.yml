@@ -102,7 +102,7 @@ jobs:
         run: |
           python -m pip install numpy scipy pytest
           python -m pip install --only-binary=:all: --upgrade --pre --extra-index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple matplotlib
-          python -m pip install pybinding --no-deps
+          python -m pip install pybinding-dev --no-deps
           python -m pip list
       - name: Run tests
         run: |
