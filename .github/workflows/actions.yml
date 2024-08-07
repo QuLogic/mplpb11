@@ -18,6 +18,7 @@ jobs:
         run: |
           python -m pip install build
           python -m build --wheel
+          Get-Command gcc
           $env:LDFLAGS="-static-libgcc -static-libstdc++"; python -m pip install --no-binary=matplotlib -v "matplotlib==3.9.1"; $env:LDFLAGS=$null
           python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
           python -m pip list
