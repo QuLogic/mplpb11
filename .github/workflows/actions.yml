@@ -41,7 +41,7 @@ jobs:
             c:\users\runneradmin\appdata\local\pip\cache\wheels\
       - name: Run tests
         run: |
-          python -c "import pyerror; exit(pyerror.test())"
+          python -c "import os; os.add_dll_directory(r'C:\mingw64\bin'); import pyerror; exit(pyerror.test())"
 
   test3:
     name: "matplotlib 3.9.1 from uv"
