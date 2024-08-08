@@ -36,7 +36,40 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-mingw
+          path: |
+            c:\users\runneradmin\appdata\local\pip\cache\wheels\
+      - name: Run tests
+        run: |
+          python -c "import os; os.add_dll_directory(r'C:\mingw64\bin'); import pyerror; exit(pyerror.test())"
+
+  test2:
+    name: "matplotlib 3.9.1 from source with msvc"
+    runs-on: "windows-latest"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install matplotlib and pyerror
+        run: |
+          python -m pip install build
+          python -m build --wheel
+          python -m pip install --no-binary=matplotlib -v "matplotlib==3.9.1" -Csetup-args=--vsenv
+          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
+          python -m pip list
+      - name: Check dependencies
+        run: |
+          Get-ChildItem "$env:pythonLocation\Lib\site-packages\matplotlib" -Filter *.pyd |
+          Foreach-Object {
+            .\deps\Dependencies.exe -chain $_.FullName
+          }
+      - name: Archive wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-msvc
           path: |
             c:\users\runneradmin\appdata\local\pip\cache\wheels\
       - name: Run tests
@@ -63,7 +96,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-uv
           path: |
             c:\users\runneradmin\appdata\local\pip\cache\wheels\
       - name: Run tests
