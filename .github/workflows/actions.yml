@@ -16,6 +16,7 @@ jobs:
           python-version: "3.12"
       - name: Install matplotlib and pyerror
         run: |
+          tree $env:pythonLocation
           python -m pip install build
           python -m build --wheel
           $env:LDFLAGS="-static-libgcc -static-libstdc++"; python -m pip install --no-binary=matplotlib -v "matplotlib==3.9.1"; $env:LDFLAGS=$null
@@ -29,7 +30,7 @@ jobs:
           Get-Command msvcp140.dll
       - name: Check dependencies
         run: |
-          .\deps\Dependencies.exe -modules c:\hostedtoolcache\windows\python\3.12.4\x64\lib\site-packages\matplotlib\*.pyd
+          .\deps\Dependencies.exe -modules $env:pythonLocation\lib\site-packages\matplotlib\*.pyd
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
