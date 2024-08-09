@@ -10,7 +10,7 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "pypy3.9"]
 
-    name: "matplotlib ${{ matrix.python-version }}"
+    name: "Python ${{ matrix.python-version }} 3.9.1.post2"
     runs-on: "windows-latest"
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +24,32 @@ jobs:
           python -m pip install build
           python -m build --wheel
           python -m pip install "matplotlib==3.9.1.post2"
+          python -m pip install dist\$(ls dist\pyerror-*.whl | select-object -expandproperty Name)
+          python -m pip list
+      - name: Run tests
+        run: |
+          python -c "import pyerror; exit(pyerror.test())"
+
+  test2:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "pypy3.9"]
+
+    name: "Python ${{ matrix.python-version }} PR 28687"
+    runs-on: "windows-latest"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install matplotlib and pyerror
+        run: |
+          python -m pip install build
+          python -m build --wheel
+          python -m pip install --find-links pr28687 --pre matplotlib
           python -m pip install dist\$(ls dist\pyerror-*.whl | select-object -expandproperty Name)
           python -m pip list
       - name: Run tests
