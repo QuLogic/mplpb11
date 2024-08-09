@@ -5,7 +5,12 @@ on: push
 
 jobs:
   test1:
-    name: "matplotlib 3.9.1"
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "pypy3.9"]
+
+    name: "matplotlib ${{ matrix.python-version }}"
     runs-on: "windows-latest"
     steps:
       - uses: actions/checkout@v4
@@ -13,143 +18,14 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
       - name: Install matplotlib and pyerror
         run: |
           python -m pip install build
           python -m build --wheel
           python -m pip install "matplotlib==3.9.1.post2"
-          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
+          python -m pip install dist\$(ls dist\pyerror-*.whl | select-object -expandproperty Name)
           python -m pip list
       - name: Run tests
         run: |
           python -c "import pyerror; exit(pyerror.test())"
-
-  test1a:
-    name: "matplotlib 3.9.1 pypy"
-    runs-on: "windows-latest"
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "pypy3.9"
-      - name: Install matplotlib and pyerror
-        run: |
-          python -m pip install build
-          python -m build --wheel
-          python -m pip install "matplotlib==3.9.1.post2"
-          python -m pip install dist\pyerror-0.0.1-pp39-pypy39_pp73-win_amd64.whl
-          python -m pip list
-      - name: Run tests
-        run: |
-          python -c "import pyerror; exit(pyerror.test())"
-
-  test2:
-    name: "matplotlib 3.9.1 from source"
-    runs-on: "windows-latest"
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install matplotlib and pyerror
-        run: |
-          python -m pip install build
-          python -m build --wheel
-          python -m pip install --no-binary=matplotlib -v "matplotlib==3.9.1"
-          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
-          python -m pip list
-      - name: Check for mingw
-        run: |
-          $env:PATHEXT="$env:PATHEXT;.dll"
-          Get-Command gcc
-          Get-Command libwinpthread-1.dll
-          Get-Command msvcp140.dll
-      - name: Check dependencies
-        run: |
-          Get-ChildItem "$env:pythonLocation\Lib\site-packages\matplotlib" -Filter *.pyd |
-          Foreach-Object {
-            .\deps\Dependencies.exe -chain $_.FullName
-          }
-      - name: Archive wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-mingw
-          path: |
-            c:\users\runneradmin\appdata\local\pip\cache\wheels\
-      - name: Run tests
-        run: |
-          python -c "import os; os.add_dll_directory(r'C:\mingw64\bin'); import pyerror; exit(pyerror.test())"
-
-  test3:
-    name: "matplotlib 3.9.1 from source with msvc"
-    runs-on: "windows-latest"
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install matplotlib and pyerror
-        run: |
-          python -m pip install build
-          python -m build --wheel
-          python -m pip install --no-binary=matplotlib -v "matplotlib==3.9.1" -Csetup-args=--vsenv
-          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
-          python -m pip list
-      - name: Check dependencies
-        run: |
-          Get-ChildItem "$env:pythonLocation\Lib\site-packages\matplotlib" -Filter *.pyd |
-          Foreach-Object {
-            .\deps\Dependencies.exe -chain $_.FullName
-          }
-      - name: Archive wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-msvc
-          path: |
-            c:\users\runneradmin\appdata\local\pip\cache\wheels\
-      - name: Run tests
-        run: |
-          python -c "import os; os.add_dll_directory(r'C:\mingw64\bin'); import pyerror; exit(pyerror.test())"
-
-  test4:
-    name: "matplotlib 3.9.1 from uv"
-    runs-on: "windows-latest"
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install matplotlib and pyerror
-        run: |
-          python -m pip install build uv
-          python -m build --wheel
-          uv pip install --no-binary=matplotlib -v "matplotlib==3.9.1"
-          python -m pip install dist\pyerror-0.0.1-cp312-cp312-win_amd64.whl
-          python -m pip list
-      - name: Archive wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-uv
-          path: |
-            c:\users\runneradmin\appdata\local\pip\cache\wheels\
-      - name: Run tests
-        shell: bash
-        run: |
-          "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\gflags.exe" -i python.exe +sls
-          "C:\Program Files (x86)\Windows Kits\10\Debuggers\x64\cdb.exe" -logo log.txt -g -G -o -xn av python -c "import pyerror; exit(pyerror.test())"
-      - name: Archive wheels
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: cdb-log
-          path: |
-            log.txt
